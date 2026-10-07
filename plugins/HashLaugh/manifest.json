@@ -1,6 +1,6 @@
 {
   "name": "HashLaugh",
-  "description": "Automatically adds # and =)) before Discord messages",
+  "description": "Automatically adds # and mention =))=)) before Discord messages",
   "authors": [
     {
       "name": "zeisu"
