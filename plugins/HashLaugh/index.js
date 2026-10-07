@@ -5,6 +5,12 @@
 
     if (!MessageActions?.sendMessage) return;
 
+    let targetUserIds = [];
+
+    function getRandomSuffix() {
+        return Math.random() < 0.3 ? " =))=))" : "";
+    }
+
     patcher.before("sendMessage", MessageActions, (args) => {
         const message = args?.[1];
 
@@ -12,14 +18,41 @@
 
         const content = message.content;
 
-        if (content.startsWith("# ")) return;
+        // Tìm tất cả mention trong tin nhắn
+        const mentions = [...content.matchAll(/<@!?(\d+)>/g)];
 
-        if (content.startsWith("#")) {
+        // Nếu có mention → cập nhật target
+        if (mentions.length > 0) {
+            targetUserIds = [...new Set(mentions.map(m => m[1]))];
+
+            // Xóa mention khỏi vị trí ban đầu
+            const cleanContent = content
+                .replace(/<@!?\d+>/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            const targets = targetUserIds
+                .map(id => "<@" + id + ">")
+                .join(" ");
+
             message.content =
-                "# " + content.slice(1).replace(/^ +/, "") + " =))=))";
+                "# " + cleanContent + " " + targets + getRandomSuffix();
+
+            return;
+        }
+
+        // Những tin nhắn sau tự động mention target ở cuối
+        if (targetUserIds.length > 0) {
+            const targets = targetUserIds
+                .map(id => "<@" + id + ">")
+                .join(" ");
+
+            message.content =
+                "# " + content + " " + targets + getRandomSuffix();
         } else {
+            // Chưa có target
             message.content =
-                "# " + content + " =))=))";
+                "# " + content + getRandomSuffix();
         }
     });
 })();
